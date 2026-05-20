@@ -3,10 +3,36 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'list_screen.dart';
 import 'login_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final String username;
 
   const HomeScreen({super.key, required this.username});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  final List<Map<String, String>> _tabs = [
+    {'label': 'News', 'type': 'articles', 'title': 'Berita Terkini'},
+    {'label': 'Blog', 'type': 'blogs', 'title': 'Blog Terbaru'},
+    {'label': 'Report', 'type': 'reports', 'title': 'Laporan Terbaru'},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: _tabs.length, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   Future<void> _logout(BuildContext context) async {
     final confirm = await showDialog<bool>(
@@ -47,7 +73,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hai, $username!'),
+        title: Text('Hai, ${widget.username}!'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -55,138 +81,19 @@ class HomeScreen extends StatelessWidget {
             onPressed: () => _logout(context),
           ),
         ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 8),
-            const Text(
-              'Pilih Kategori',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Temukan berita, blog, dan laporan terbaru',
-              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 24),
-            _buildMenuCard(
-              context,
-              title: 'News',
-              description:
-                  'Get an overview of the latest SpaceFlight news, from various sources. Easily link your users to the right websites',
-              icon: Icons.newspaper,
-              color: const Color(0xFF4CAF50),
-              type: 'articles',
-              listTitle: 'Berita Terkini',
-            ),
-            const SizedBox(height: 16),
-            _buildMenuCard(
-              context,
-              title: 'Blog',
-              description:
-                  'Blogs often provide a more detailed overview of launches and missions. A must-have for the serious spaceflight enthusiast',
-              icon: Icons.edit_note,
-              color: const Color(0xFF2196F3),
-              type: 'blogs',
-              listTitle: 'Blog Terbaru',
-            ),
-            const SizedBox(height: 16),
-            _buildMenuCard(
-              context,
-              title: 'Report',
-              description:
-                  'Space stations and other missions often publish their data. With SNAPI, you can include it in your application',
-              icon: Icons.assessment,
-              color: const Color(0xFFFF9800),
-              type: 'reports',
-              listTitle: 'Laporan Terbaru',
-            ),
-          ],
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white60,
+          tabs: _tabs.map((t) => Tab(text: t['label'])).toList(),
         ),
       ),
-    );
-  }
-
-  Widget _buildMenuCard(
-    BuildContext context, {
-    required String title,
-    required String description,
-    required IconData icon,
-    required Color color,
-    required String type,
-    required String listTitle,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ListScreen(type: type, title: listTitle),
-          ),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.07),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 36),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                      height: 1.4,
-                    ),
-                    maxLines: 4,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
-          ],
-        ),
+      body: TabBarView(
+        controller: _tabController,
+        children: _tabs
+            .map((t) => ListScreen(type: t['type']!, title: t['title']!))
+            .toList(),
       ),
     );
   }

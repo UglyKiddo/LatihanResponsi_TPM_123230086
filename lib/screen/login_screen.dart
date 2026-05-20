@@ -131,7 +131,6 @@ class _LoginScreenState extends State<LoginScreen>
                 padding: const EdgeInsets.symmetric(vertical: 40),
                 child: const Column(
                   children: [
-                    Icon(Icons.rocket_launch, size: 60, color: Colors.white),
                     SizedBox(height: 12),
                     Text(
                       'SpaceFlight App',
